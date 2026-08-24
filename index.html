@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Primary SEO Meta Tags -->
+    <title>Universe & You ❤️ | 3D Cosmic Love Galaxy & Memories</title>
+    <meta name="title" content="Universe & You ❤️ | 3D Cosmic Love Galaxy & Memories" />
+    <meta name="description" content="Explore a romantic 3D cosmic galaxy with thousands of shining star particles forming a crystal heart, floating memories, and a secret love letter." />
+    <meta name="keywords" content="Universe and You, 3D Love Galaxy, Romantic Memories, 3D Love Letter, Three.js Galaxy, Love Gift, Romantic Universe" />
+    <meta name="author" content="Universe & You" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#0d0414" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <!-- Favicons & App Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="./favicon_io/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="./favicon_io/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="./favicon_io/favicon-16x16.png" />
+    <link rel="shortcut icon" href="./favicon_io/favicon.ico" />
+    <link rel="manifest" href="./favicon_io/site.webmanifest" />
+
+    <!-- Open Graph / Facebook / Zalo Sharing Meta Tags -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://universeandyou.love/" />
+    <meta property="og:title" content="Universe & You ❤️ | A 3D Cosmic Love Gift Just For You" />
+    <meta property="og:description" content="Tap the gift box to reveal a magical 3D galaxy filled with sparkling love stars and our sweetest memories." />
+    <meta property="og:image" content="./favicon_io/android-chrome-512x512.png" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Universe & You ❤️ | 3D Love Galaxy" />
+    <meta name="twitter:description" content="Explore a magical 3D love galaxy with a glowing crystal heart and cherished memories." />
+    <meta name="twitter:image" content="./favicon_io/android-chrome-512x512.png" />
+
+    <!-- Structured Data (Schema.org JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Universe & You",
+      "url": "https://universeandyou.love/",
+      "description": "A romantic 3D love galaxy featuring thousands of star particles forming a crystal heart core and memory photo album.",
+      "inLanguage": "en"
+    }
+    </script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Outfit:wght@300;400;600;700&family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="./style/style.css">
+    
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.136.0/build/three.module.js"
+      }
+    }
+    </script>
+</head>
+
+<body>
+    <!-- 2D Canvas for Cursor Sparkles & Fireworks -->
+    <canvas id="fxCanvas"></canvas>
+
+    <!-- Initial Overlay / Gift Screen -->
+    <div id="overlay">
+        <div class="overlay-content">
+            <div class="gift-wrapper">
+                <img src="./style/gift.png" alt="Gift" id="gift-box">
+                <div class="gift-glow"></div>
+            </div>
+            <h1>Mở Quà Ngay Nè ❤️</h1>
+            <p class="overlay-subtitle">Chạm vào hộp quà để khám phá vũ trụ dành riêng cho em</p>
+            
+            <!-- Loading Indicator & Network Status Hint -->
+            <div id="loading-box">
+                <div class="loading-bar-track">
+                    <div id="loading-bar-fill"></div>
+                </div>
+                <p id="loading-status-text">Đang tải vũ trụ ngàn sao...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Cosmic Toast Notification -->
+    <div id="toast" class="toast hidden">
+        <span id="toast-icon">✨</span>
+        <span id="toast-message">Đang kết nối...</span>
+    </div>
+
+    <!-- UI Overlay (Appears after opening gift) -->
+    <div id="ui-container" class="hidden">
+
+        <!-- Top Center: Guide Hint (Tự ẩn sau 5s) -->
+        <div id="guide-hint">
+            <span class="sparkle">✨</span>
+            <span>Kéo để xoay vũ trụ • Cuộn phóng to • Chạm ảnh xem kỷ niệm</span>
+            <span class="sparkle">✨</span>
+        </div>
+
+        <!-- Bottom Right: Unified Cosmic Glass Dock (Tối giản: Đĩa Nhạc & Bức Thư) -->
+        <div id="control-panel" class="floating-dock">
+            <!-- Music Control with Equalizer Waves -->
+            <button id="btn-music" class="dock-btn" title="Bật / Tắt Nhạc">
+                <div class="vinyl-disc" id="vinyl">
+                    <span class="music-icon">🎵</span>
+                </div>
+                <div class="sound-wave">
+                    <span></span><span></span><span></span>
+                </div>
+            </button>
+
+            <!-- Love Letter Button (Icon 💌) -->
+            <button id="btn-letter" class="dock-btn letter-btn" title="Mở bức thư tình bí mật">
+                <span class="btn-icon">💌</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Photo Lightbox Modal -->
+    <div id="photo-modal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content glass-card photo-card">
+            <button class="modal-close" id="photo-close">&times;</button>
+            <div class="photo-container">
+                <img id="modal-img" src="" alt="Kỷ niệm tình yêu">
+                <div class="photo-glow"></div>
+            </div>
+            <div class="photo-caption">
+                <h3 id="modal-caption-title">Khoảnh Khắc Đẹp Nhất</h3>
+                <p id="modal-caption-text">Mỗi giây phút bên em đều là món quà quý giá nhất của anh.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Love Letter Modal -->
+    <div id="letter-modal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content glass-card letter-card">
+            <button class="modal-close" id="letter-close">&times;</button>
+            <div class="letter-header">
+                <h2>Gửi Em, Tình Yêu Của Anh 💌</h2>
+                <div class="letter-divider"></div>
+            </div>
+            <div class="letter-body">
+                <p id="typewriter-text"></p>
+                <span class="typewriter-cursor">|</span>
+            </div>
+            <div class="letter-footer">
+                <p class="letter-sign">Mãi yêu em ❤️</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Background Music -->
+    <audio id="sound" loop preload="auto">
+        <source src="./style/hihi.mp3" type="audio/mpeg" />
+    </audio>
+
+    <!-- Three.js App -->
+    <script type="module" src="./style/script.js"></script>
+</body>
+
+</html>

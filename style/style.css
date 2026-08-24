@@ -1,0 +1,866 @@
+:root {
+    --primary-pink: #ff69b4;
+    --accent-purple: #9d4edd;
+    --soft-glow: rgba(255, 105, 180, 0.45);
+    --glass-bg: rgba(18, 10, 35, 0.65);
+    --glass-border: rgba(255, 255, 255, 0.18);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+}
+
+* {
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+body {
+    margin: 0;
+    overflow: hidden;
+    background: radial-gradient(circle at center, #0d0221 0%, #050014 60%, #000000 100%);
+    font-family: 'Outfit', 'Be Vietnam Pro', sans-serif;
+    color: #ffffff;
+    width: 100vw;
+    height: 100vh;
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+/* 2D Effect Canvas (Cursor Sparkles, Fireworks) */
+#fxCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 9990;
+}
+
+canvas:not(#fxCanvas) {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+/* ========================================================
+   OVERLAY / GIFT SCREEN
+   ======================================================== */
+#overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle at center, #160728 0%, #050010 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    cursor: pointer;
+    will-change: opacity, transform;
+    transition: opacity 0.75s ease-out, visibility 0.75s ease-out;
+}
+
+#overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: scale(1.05);
+}
+
+.overlay-content {
+    text-align: center;
+    color: white;
+    animation: fadeIn 1.2s ease-out;
+    padding: 20px;
+    max-width: 90vw;
+}
+
+.gift-wrapper {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 24px;
+}
+
+#gift-box {
+    width: 200px;
+    max-width: 65vw;
+    filter: drop-shadow(0 0 35px rgba(255, 105, 180, 0.7));
+    animation: floatGift 3s ease-in-out infinite;
+    display: block;
+    margin: 0 auto;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.gift-wrapper:hover #gift-box {
+    transform: scale(1.08) rotate(2deg);
+    filter: drop-shadow(0 0 45px rgba(255, 150, 220, 0.9));
+}
+
+.gift-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 180px;
+    height: 180px;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(255, 105, 180, 0.4) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: pulseGlow 2.5s ease-in-out infinite;
+    pointer-events: none;
+}
+
+h1 {
+    font-size: 2.6rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #ffffff 0%, #ffb6c1 50%, #ff69b4 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 30px rgba(255, 105, 180, 0.4);
+    letter-spacing: 1.5px;
+    margin: 0 0 12px 0;
+}
+
+.overlay-subtitle {
+    font-size: 1.05rem;
+    color: rgba(255, 230, 245, 0.85);
+    margin: 0 0 16px 0;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+    animation: pulseText 2s ease-in-out infinite;
+}
+
+/* Loading Box Indicator */
+#loading-box {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 220px;
+    margin-left: auto;
+    margin-right: auto;
+    transition: opacity 0.5s ease;
+}
+
+.loading-bar-track {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+
+#loading-bar-fill {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #ff1493, #ff69b4, #ffffff);
+    border-radius: 10px;
+    box-shadow: 0 0 10px #ff69b4;
+    transition: width 0.3s ease;
+}
+
+#loading-status-text {
+    font-size: 0.8rem;
+    color: rgba(255, 200, 230, 0.8);
+    margin: 0;
+    letter-spacing: 0.5px;
+}
+
+/* ========================================================
+   COSMIC TOAST NOTIFICATION (THÔNG BÁO MẠNG / ÂM THANH / LỖI)
+   ======================================================== */
+.toast {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(0);
+    background: rgba(25, 10, 40, 0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 182, 193, 0.35);
+    border-radius: 40px;
+    padding: 10px 22px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #fff0f7;
+    font-size: 0.86rem;
+    font-weight: 500;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 105, 180, 0.35);
+    z-index: 100000;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+    max-width: 90vw;
+    text-align: center;
+}
+
+.toast.hidden {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-25px);
+}
+
+#toast-icon {
+    font-size: 1.1rem;
+    animation: heartbeat 1.5s infinite;
+}
+
+/* ========================================================
+   GLASSMORPHISM & UI CONTAINER
+   ======================================================== */
+#ui-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 100;
+    transition: opacity 1s ease-in-out;
+}
+
+#ui-container.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    box-shadow: var(--glass-shadow), 0 0 20px rgba(255, 105, 180, 0.15);
+    pointer-events: auto;
+}
+
+/* ========================================================
+   GUIDE HINT (GÓC TRÊN CHÍNH GIỮA)
+   ======================================================== */
+#guide-hint {
+    position: absolute;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(18, 8, 32, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 182, 193, 0.2);
+    border-radius: 30px;
+    padding: 8px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    color: rgba(255, 235, 245, 0.9);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+    animation: floatHint 3s ease-in-out infinite;
+    transition: opacity 1s ease, visibility 1s ease;
+    white-space: nowrap;
+}
+
+#guide-hint.fade-out {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.sparkle {
+    color: #ff99ff;
+    animation: sparkleGlow 1.5s ease-in-out infinite alternate;
+}
+
+/* ========================================================
+   FLOATING DOCK (GÓC DƯỚI BÊN PHẢI - THANH CÔNG CỤ HIỆN ĐẠI)
+   ======================================================== */
+.floating-dock {
+    position: absolute;
+    top: auto;
+    bottom: 24px;
+    right: 24px;
+    width: fit-content;
+    height: fit-content;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 12px;
+    background: rgba(18, 8, 32, 0.72);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 182, 193, 0.28);
+    border-radius: 50px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.55), 0 0 25px rgba(255, 105, 180, 0.25);
+    pointer-events: auto;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.floating-dock:hover {
+    border-color: rgba(255, 182, 193, 0.5);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(255, 105, 180, 0.4);
+}
+
+.dock-btn {
+    border: none;
+    outline: none;
+    cursor: pointer;
+    background: transparent;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    color: white;
+    font-family: inherit;
+}
+
+.dock-btn:hover {
+    transform: scale(1.1);
+}
+
+.dock-btn:active {
+    transform: scale(0.92);
+}
+
+/* 1. Nút Đĩa Than & Âm Nhạc */
+#btn-music {
+    position: relative;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.vinyl-disc {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #ff69b4 18%, #151515 19%, #282828 45%, #151515 65%, #000 100%);
+    border: 1.5px solid rgba(255, 255, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: spinVinyl 4s linear infinite;
+    animation-play-state: paused;
+}
+
+#btn-music.playing {
+    border-color: rgba(255, 105, 180, 0.7);
+    box-shadow: 0 0 20px rgba(255, 105, 180, 0.6);
+}
+
+#btn-music.playing .vinyl-disc {
+    animation-play-state: running;
+}
+
+.music-icon {
+    font-size: 0.85rem;
+    color: white;
+    filter: drop-shadow(0 0 3px #000);
+}
+
+/* Sound Wave Equalizer Bars */
+.sound-wave {
+    display: none;
+    position: absolute;
+    bottom: -3px;
+    gap: 2px;
+    align-items: flex-end;
+    height: 8px;
+}
+
+#btn-music.playing .sound-wave {
+    display: flex;
+}
+
+.sound-wave span {
+    width: 2px;
+    height: 100%;
+    background: #ff69b4;
+    border-radius: 2px;
+    animation: soundWave 0.8s ease-in-out infinite alternate;
+}
+.sound-wave span:nth-child(2) { animation-delay: 0.25s; }
+.sound-wave span:nth-child(3) { animation-delay: 0.5s; }
+
+@keyframes soundWave {
+    from { height: 2px; }
+    to { height: 8px; }
+}
+
+/* 2. Nút Thư Tình (NỔI BẬT VỚI HÀO QUANG PHÁT SÁNG & NHỊP TIM) */
+.letter-btn {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff1493 0%, #ff69b4 50%, #9d4edd 100%);
+    border: 2px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 0 0 20px rgba(255, 20, 147, 0.8), 0 0 40px rgba(255, 105, 180, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: letterPulse 2s ease-in-out infinite;
+}
+
+.letter-btn::after {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    right: -6px;
+    bottom: -6px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 105, 180, 0.7);
+    animation: letterRipple 2s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+    pointer-events: none;
+}
+
+.letter-btn:hover {
+    transform: scale(1.18) rotate(5deg);
+    box-shadow: 0 0 30px rgba(255, 20, 147, 1), 0 0 60px rgba(255, 105, 180, 0.8);
+}
+
+.btn-icon {
+    font-size: 1.25rem;
+    filter: drop-shadow(0 0 6px #ffffff);
+    animation: iconFloat 2.5s ease-in-out infinite;
+}
+
+@keyframes letterPulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 15px rgba(255, 20, 147, 0.8), 0 0 30px rgba(255, 105, 180, 0.4);
+    }
+    50% {
+        transform: scale(1.08);
+        box-shadow: 0 0 25px rgba(255, 20, 147, 1), 0 0 50px rgba(255, 105, 180, 0.8);
+    }
+}
+
+@keyframes letterRipple {
+    0% {
+        transform: scale(0.9);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.6);
+        opacity: 0;
+    }
+}
+
+@keyframes iconFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+}
+
+/* ========================================================
+   RESPONSIVE & MOBILE UI/UX OPTIMIZATION (CHUẨN MOBILE)
+   ======================================================== */
+@media (max-width: 768px) {
+    /* Tránh viền tai thỏ / Dynamic Island / Home Bar */
+    :root {
+        --safe-top: env(safe-area-inset-top, 12px);
+        --safe-bottom: env(safe-area-inset-bottom, 16px);
+    }
+
+    /* Trên điện thoại, dòng chỉ dẫn đặt phía dưới dock */
+    #guide-hint {
+        top: auto;
+        bottom: calc(78px + env(safe-area-inset-bottom, 0px));
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.72rem;
+        padding: 6px 14px;
+        width: 88vw;
+        max-width: 320px;
+        text-align: center;
+        white-space: normal;
+        border-radius: 20px;
+    }
+
+    /* Floating Dock nằm gọn góc dưới bên phải, tránh thanh điều hướng gesture */
+    .floating-dock {
+        top: auto;
+        bottom: max(16px, var(--safe-bottom));
+        right: 14px;
+        width: fit-content;
+        height: fit-content;
+        gap: 10px;
+        padding: 6px 8px;
+    }
+
+    .dock-btn {
+        width: 44px;
+        height: 44px; /* Chuẩn Apple HIG kích thước chạm ngón tay */
+    }
+
+    /* Modal hiển thị trên màn hình dọc điện thoại */
+    .photo-card {
+        width: 90vw;
+        max-width: 380px;
+        padding: 16px 14px;
+        border-radius: 22px;
+    }
+
+    .photo-container {
+        max-height: 42vh;
+        border-radius: 14px;
+        margin-bottom: 12px;
+    }
+
+    #modal-img {
+        max-height: 42vh;
+        border-radius: 14px;
+    }
+
+    .photo-caption h3 {
+        font-size: 1.1rem;
+    }
+
+    .photo-caption p {
+        font-size: 0.88rem;
+        line-height: 1.45;
+    }
+
+    /* Thiệp tình yêu trên Mobile */
+    .letter-card {
+        width: 92vw;
+        max-width: 400px;
+        padding: 26px 18px 20px;
+        border-radius: 24px;
+    }
+
+    .letter-header h2 {
+        font-size: 1.85rem;
+    }
+
+    .letter-divider {
+        margin: 12px auto 16px;
+    }
+
+    .letter-body {
+        max-height: 48vh;
+        font-size: 0.98rem;
+        line-height: 1.7;
+        padding: 4px 6px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .letter-sign {
+        font-size: 1.6rem;
+    }
+
+    .modal-close {
+        top: 12px;
+        right: 12px;
+        width: 34px;
+        height: 34px;
+        font-size: 1.3rem;
+    }
+}
+
+/* ========================================================
+   MODALS (PHOTO LIGHTBOX & LOVE LETTER)
+   ======================================================== */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+.modal.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(5, 0, 15, 0.85);
+    backdrop-filter: blur(12px);
+}
+
+.modal-content {
+    position: relative;
+    z-index: 2;
+    max-width: 90vw;
+    max-height: 88vh;
+    padding: 24px;
+    animation: scaleModal 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    overflow: hidden;
+}
+
+.modal-close {
+    position: absolute;
+    top: 16px;
+    right: 18px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: #ffffff;
+    font-size: 1.4rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+.modal-close:hover {
+    background: #ff1493;
+    border-color: #ffffff;
+    transform: rotate(90deg) scale(1.15);
+    box-shadow: 0 0 15px rgba(255, 20, 147, 0.8);
+}
+
+/* Photo Card */
+.photo-card {
+    width: 440px;
+    text-align: center;
+    padding: 20px;
+    border-radius: 24px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7), 0 0 35px rgba(255, 105, 180, 0.3);
+}
+
+.photo-container {
+    position: relative;
+    border-radius: 18px;
+    overflow: hidden;
+    max-height: 52vh;
+    background: #000;
+    margin-bottom: 16px;
+}
+
+#modal-img {
+    width: 100%;
+    height: 100%;
+    max-height: 52vh;
+    object-fit: cover;
+    display: block;
+    border-radius: 18px;
+    transition: transform 0.4s ease;
+}
+
+.photo-container:hover #modal-img {
+    transform: scale(1.03);
+}
+
+.photo-caption h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0 0 6px 0;
+    color: #ffb6c1;
+    text-shadow: 0 0 10px rgba(255, 182, 193, 0.5);
+}
+
+.photo-caption p {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0;
+    font-style: italic;
+}
+
+/* ========================================================
+   LOVE LETTER MODAL (THIỆP TÌNH YÊU VŨ TRỤ SANG TRỌNG)
+   ======================================================== */
+.letter-card {
+    width: 580px;
+    padding: 40px 34px;
+    border-radius: 30px;
+    background: radial-gradient(circle at top left, rgba(45, 15, 65, 0.92) 0%, rgba(18, 5, 32, 0.96) 100%);
+    border: 2px solid rgba(255, 182, 193, 0.45);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85), 0 0 50px rgba(255, 105, 180, 0.45), inset 0 0 30px rgba(255, 105, 180, 0.15);
+}
+
+.letter-header h2 {
+    font-family: 'Dancing Script', cursive;
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #ffffff 0%, #ffb6c1 50%, #ff69b4 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0;
+    text-align: center;
+    text-shadow: 0 0 25px rgba(255, 105, 180, 0.8);
+}
+
+.letter-divider {
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #ff69b4, #ffffff, #ff69b4, transparent);
+    margin: 16px auto 22px;
+    width: 85%;
+    box-shadow: 0 0 10px rgba(255, 105, 180, 0.8);
+}
+
+.letter-body {
+    max-height: 52vh;
+    overflow-y: auto;
+    padding: 6px 12px;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 400;
+    line-height: 1.85;
+    color: #fff0f7;
+    white-space: pre-wrap;
+    text-shadow: 0 0 10px rgba(255, 200, 225, 0.35);
+}
+
+.letter-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.letter-body::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #ff1493, #9d4edd);
+    border-radius: 10px;
+}
+
+.typewriter-cursor {
+    display: inline-block;
+    color: #ff69b4;
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-shadow: 0 0 10px #ff69b4;
+    animation: blink 0.8s infinite;
+}
+
+.letter-footer {
+    text-align: right;
+    margin-top: 24px;
+    padding-top: 12px;
+    border-top: 1px dashed rgba(255, 182, 193, 0.3);
+}
+
+.letter-sign {
+    font-family: 'Dancing Script', cursive;
+    font-size: 2.1rem;
+    font-weight: 700;
+    color: #ff80bf;
+    margin: 0;
+    text-shadow: 0 0 15px rgba(255, 105, 180, 0.8);
+}
+
+/* ========================================================
+   ANIMATIONS & KEYFRAMES
+   ======================================================== */
+@keyframes floatGift {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-16px) rotate(3deg);
+    }
+}
+
+@keyframes pulseGlow {
+    0%, 100% {
+        transform: translate(-50%, -50%) scale(0.9);
+        opacity: 0.5;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.25);
+        opacity: 0.85;
+    }
+}
+
+@keyframes pulseText {
+    0%, 100% {
+        opacity: 0.7;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.92);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes scaleModal {
+    from {
+        opacity: 0;
+        transform: scale(0.85);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes heartbeat {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.3);
+    }
+}
+
+@keyframes blink {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0;
+    }
+}
+
+@keyframes spinVinyl {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes floatHint {
+    0%, 100% {
+        transform: translate(-50%, 0);
+    }
+    50% {
+        transform: translate(-50%, -8px);
+    }
+}
+
+@keyframes sparkleGlow {
+    from {
+        transform: scale(0.9);
+        opacity: 0.6;
+    }
+    to {
+        transform: scale(1.3);
+        opacity: 1;
+    }
+}
