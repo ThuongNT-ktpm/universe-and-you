@@ -1,0 +1,6 @@
+node_modules/
+package.json
+package-lock.json
+*.log
+take_snapshot.js
+generate_preview_banner.js
